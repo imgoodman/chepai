@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>车牌数据</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="../src/bootstrap-3.2.0-dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-lg-12" style="min-height:600px;" id="summary_main"></div>
+        </div>
+    </div>
+    </body>
+    <script src="../src/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../src/bootstrap-3.2.0-dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../src/echarts/echarts.min.js"></script>
+    <script>
+        $(function(){
+            var h=document.documentElement.clientHeight;
+            $("#summary_main").css({"height":h+"px"});
+            var myChart=echarts.init(document.getElementById("summary_main"));
+
+            function getSummaryData(fn){
+                $.getJSON("../file/summary.json",function(res){
+                    fn(res);
+                });
+            };
+            getSummaryData(setEChartOption);
+
+            function setEChartOption(data){
+                var x_data=$.map(data,function(item){return item.bid_month;});
+                var alert_price=$.map(data,function(item){return parseInt(item.alert_price);});
+                var lowest_price=$.map(data,function(item){return item.lowest_price;});
+                var avg_price=$.map(data,function(item){return item.avg_price;});
+                var bid_people_num=$.map(data,function(item){return item.bid_people_num;});
+                var license_num=$.map(data,function(item){return item.license_num;});
+                // 指定图表的配置项和数据
+                var option = {
+                    title: {
+                        text: '历年车牌拍卖数据'
+                    },
+                    tooltip: {
+                        trigger:'axis'
+                    },
+                    legend: {
+                        data:['警示价','最低成交价','平均成交价','参拍人数','拍卖额度']
+                    },
+                    xAxis: {
+                        type:'category',
+                        data: x_data
+                    },
+                    yAxis: {
+                        type:'value'
+                    },
+                    dataZoom:[
+                        {
+                            type:'slider',
+                            show:true,
+                            xAxisIndex:[0],
+                            start:80,
+                            end:100
+                        }
+                    ],
+                    series: [
+                        {
+                            name: '警示价',
+                            type: 'line',
+                            data: alert_price
+                        },
+                        {
+                            name:'最低成交价',
+                            type:'line',
+                            data:lowest_price
+                        },
+                        {
+                            name:'平均成交价',
+                            type:'line',
+                            data:avg_price
+                        },
+                        {
+                            name:'参拍人数',
+                            type:'line',
+                            data:bid_people_num
+                        },
+                        {
+                            name:'拍卖额度',
+                            type:'line',
+                            data:license_num
+                        }
+                    ]
+                };
+
+                // 使用刚指定的配置项和数据显示图表。
+                myChart.setOption(option);
+            };
+        });
+    </script>
+</html>
