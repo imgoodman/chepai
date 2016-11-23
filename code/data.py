@@ -64,7 +64,7 @@ def saveBidDataToCSV(bidData,fileName="bidData.csv"):
         csvFile.close()
 
 def saveBidDataToDB(bidData):
-    conn=pymysql.connect(host="qdm115145384.my3w.com",user="qdm115145384",passwd="1234atsjtu",db="qdm115145384_db")
+    conn=pymysql.connect(host="qdm115145384.my3w.com",user="qdm115145384",passwd="********",db="qdm115145384_db")
     cur=conn.cursor()
     cur.execute("use qdm115145384_db")
     for d in bidData:
