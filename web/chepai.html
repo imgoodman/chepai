@@ -11,6 +11,12 @@
         <div class="row">
             <div class="col-lg-12" style="min-height:600px;" id="summary_main"></div>
         </div>
+        <div class="row">
+            <div class="col-lg-12" style="min-height:600px;" id="summary_price"></div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12" style="min-height:600px;" id="summary_price_margin"></div>
+        </div>
     </div>
     </body>
     <script src="../src/js/jquery-1.11.0.min.js"></script>
@@ -19,8 +25,10 @@
     <script>
         $(function(){
             var h=document.documentElement.clientHeight;
-            $("#summary_main").css({"height":h+"px"});
+            $("#summary_main,#summary_price,#summary_price_margin").css({"height":h+"px"});
             var myChart=echarts.init(document.getElementById("summary_main"));
+            var myChart_summary_price=echarts.init(document.getElementById("summary_price"));
+            var myChart_summary_price_margin=echarts.init(document.getElementById("summary_price_margin"));
 
             function getSummaryData(fn){
                 $.getJSON("../file/summary.json",function(res){
@@ -30,16 +38,18 @@
             getSummaryData(setEChartOption);
 
             function setEChartOption(data){
-                var x_data=$.map(data,function(item){return item.bid_month;});
-                var alert_price=$.map(data,function(item){return parseInt(item.alert_price);});
-                var lowest_price=$.map(data,function(item){return item.lowest_price;});
-                var avg_price=$.map(data,function(item){return item.avg_price;});
-                var bid_people_num=$.map(data,function(item){return item.bid_people_num;});
-                var license_num=$.map(data,function(item){return item.license_num;});
+                setMainChart(data);
+                setMainPriceChart(data);
+                setMainPriceMarginChart(data);                
+            };
+
+
+            /****summary all chart*****/
+            function setMainChart(data){                
                 // 指定图表的配置项和数据
                 var option = {
                     title: {
-                        text: '历年车牌拍卖数据'
+                        text: '历年车牌拍卖数据(不包含无警示价的月份)'
                     },
                     tooltip: {
                         trigger:'axis'
@@ -49,7 +59,7 @@
                     },
                     xAxis: {
                         type:'category',
-                        data: x_data
+                        data: data.map(function(item){return item.bid_month})
                     },
                     yAxis: {
                         type:'value'
@@ -67,27 +77,27 @@
                         {
                             name: '警示价',
                             type: 'line',
-                            data: alert_price
+                            data: data.map(function(item){return item.alert_price})
                         },
                         {
                             name:'最低成交价',
                             type:'line',
-                            data:lowest_price
+                            data:data.map(function(item){return item.lowest_price})
                         },
                         {
                             name:'平均成交价',
                             type:'line',
-                            data:avg_price
+                            data:data.map(function(item){return item.avg_price})
                         },
                         {
                             name:'参拍人数',
                             type:'line',
-                            data:bid_people_num
+                            data:data.map(function(item){return item.bid_people_num})
                         },
                         {
                             name:'拍卖额度',
                             type:'line',
-                            data:license_num
+                            data:data.map(function(item){return item.license_num})
                         }
                     ]
                 };
@@ -95,6 +105,102 @@
                 // 使用刚指定的配置项和数据显示图表。
                 myChart.setOption(option);
             };
+
+            /****summary price chart****/
+            function setMainPriceChart(data){
+                // 指定图表的配置项和数据
+                var option = {
+                    title: {
+                        text: '历年车牌拍卖价格数据'
+                    },
+                    tooltip: {
+                        trigger:'axis'
+                    },
+                    legend: {
+                        data:['警示价','最低成交价','平均成交价']
+                    },
+                    xAxis: {
+                        type:'category',
+                        data: data.map(function(item){ if(parseInt(item.alert_price)>0) return item.bid_month})
+                    },
+                    yAxis: {
+                        type:'value',
+                        min:'dataMin'
+                    },
+                    dataZoom:[
+                        {
+                            type:'slider',
+                            show:true,
+                            xAxisIndex:[0],
+                            start:80,
+                            end:100
+                        }
+                    ],
+                    series: [
+                        {
+                            name: '警示价',
+                            type: 'line',
+                            data: data.map(function(item){ if(parseInt(item.alert_price)>0) return item.alert_price})
+                        },
+                        {
+                            name:'最低成交价',
+                            type:'line',
+                            data:data.map(function(item){ if(parseInt(item.alert_price)>0) return item.lowest_price})
+                        },
+                        {
+                            name:'平均成交价',
+                            type:'line',
+                            data:data.map(function(item){ if(parseInt(item.alert_price)>0) return item.avg_price})
+                        }
+                    ]
+                };
+
+                // 使用刚指定的配置项和数据显示图表。
+                myChart_summary_price.setOption(option);
+            };
+
+            /****summary price margin chart****/
+            function setMainPriceMarginChart(data){
+                var option = {
+                    title: {
+                        text: '历年车牌拍卖价格数据（不包含无警示价的月份）'
+                    },
+                    tooltip: {
+                        trigger:'axis'
+                    },
+                    legend: {
+                        data:['成交价与警示价的差价']
+                    },
+                    xAxis: {
+                        type:'category',
+                        data: data.map(function(item){ if(parseInt(item.alert_price)>0) return item.bid_month})
+                    },
+                    yAxis: {
+                        type:'value',
+                        min:'dataMin'
+                    },
+                    dataZoom:[
+                        {
+                            type:'slider',
+                            show:true,
+                            xAxisIndex:[0],
+                            start:80,
+                            end:100
+                        }
+                    ],
+                    series: [
+                        {
+                            name: '成交价与警示价的差价',
+                            type: 'line',
+                            data: data.map(function(item){ if(parseInt(item.alert_price)>0) return (item.lowest_price - item.alert_price)})
+                        }
+                    ]
+                };
+
+                // 使用刚指定的配置项和数据显示图表。
+                myChart_summary_price_margin.setOption(option);
+            };
+
         });
     </script>
 </html>
