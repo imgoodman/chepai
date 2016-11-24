@@ -49,7 +49,7 @@
                 // 指定图表的配置项和数据
                 var option = {
                     title: {
-                        text: '历年车牌拍卖数据(不包含无警示价的月份)'
+                        text: '历年车牌拍卖数据'
                     },
                     tooltip: {
                         trigger:'axis'
@@ -111,7 +111,7 @@
                 // 指定图表的配置项和数据
                 var option = {
                     title: {
-                        text: '历年车牌拍卖价格数据'
+                        text: '历年车牌拍卖价格数据（不包含无警示价的月份）'
                     },
                     tooltip: {
                         trigger:'axis'
@@ -192,7 +192,23 @@
                         {
                             name: '成交价与警示价的差价',
                             type: 'line',
-                            data: data.map(function(item){ if(parseInt(item.alert_price)>0) return (item.lowest_price - item.alert_price)})
+                            data: data.map(function(item){ if(parseInt(item.alert_price)>0) return (item.lowest_price - item.alert_price)}),
+                            markLine:{
+                                data:[
+                                    {
+                                        name:'平均值',
+                                        type:'average'
+                                    },
+                                    {
+                                        name:'最大值',
+                                        type:'max'
+                                    },
+                                    {
+                                        name:'最小值',
+                                        type:'min'
+                                    }
+                                ]
+                            }
                         }
                     ]
                 };
