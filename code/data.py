@@ -143,6 +143,40 @@ def getJsonFromSummaryData():
     file_object.write(json.dumps(result))
     file_object.close()
 
+def getBidDataFromDB(yearStart=2016,yearEnd=2016):
+    secrets=confidentials.getMySqlAuth()
+    conn=pymysql.connect(host=secrets[0],user=secrets[1],passwd=secrets[2],db=secrets[3])
+    cur=conn.cursor()
+    cur.execute('use ' + secrets[3])
+    for year in range(yearStart,yearEnd+1):        
+        data=''
+        for month in range(1,13):
+            if month<10:
+                month="0"+str(month)
+            bid_month=str(year)+str(month)
+            sql='select count(0) from t_bid_data where bid_month="%s"' % (bid_month)
+            cur.execute(sql)
+            r=cur.fetchone()
+            if r[0]==0:
+                print('no data from ' +bid_month)
+                continue
+            for second in range(30,60):
+                system_time='11:29:'+str(second)
+                sql='select lowest_price from t_bid_data where bid_month="%s" and system_time="%s"' % (bid_month,system_time)
+                cur.execute(sql)
+                r=cur.fetchone()
+                lowest_price=0
+                if cur.rowcount>0:
+                    lowest_price=r[0]
+                else:
+                    print(bid_month+' '+system_time+' no data ')
+                print(bid_month+' '+system_time+' '+str(lowest_price))
+                data+=bid_month+'\t'+system_time+'\t'+str(lowest_price)+'\n'
+        file_bid_data=open('../data/bid_'+str(year)+'.txt','w')
+        file_bid_data.write(data)
+        file_bid_data.close()
+
 #beginScrapyData()
 #scrapySummaryData()
-getJsonFromSummaryData()
+#getJsonFromSummaryData()
+#getBidDataFromDB(yearStart=2013,yearEnd=2014)
