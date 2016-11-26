@@ -9,13 +9,28 @@
     <body>
     <div class="container-fluid">
         <div class="row">
-            <div class="col-lg-12" style="min-height:600px;" id="summary_main"></div>
+            <div class="col-lg-2">
+                <h2>2012年-2016年，拍牌数据统计</h2>
+                <h4>包括：警示价，最低成交价，平均成交价，参拍人员，拍卖额度</h4>
+            </div>
+            <div class="col-lg-10" style="min-height:600px;" id="summary_main"></div>
         </div>
         <div class="row">
             <div class="col-lg-12" style="min-height:600px;" id="summary_price"></div>
         </div>
         <div class="row">
             <div class="col-lg-12" style="min-height:600px;" id="summary_price_margin"></div>
+        </div>
+        <div class="row">
+            <div class="col-lg-2">
+                <h2>历年拍牌最后30秒的价格走势图</h2>
+                <div class="list-group" id="bid_year_list">
+                    <a class="list-group-item active" data-year="2016">2016年</a>
+                    <a class="list-group-item" data-year="2015">2015年</a>
+                    <a class="list-group-item" data-year="2014">2014年</a>
+                </div>
+            </div>
+            <div class="col-lg-10" style="min-height:600px;" id="bid_data_year"></div>
         </div>
     </div>
     </body>
@@ -25,10 +40,11 @@
     <script>
         $(function(){
             var h=document.documentElement.clientHeight;
-            $("#summary_main,#summary_price,#summary_price_margin").css({"height":h+"px"});
+            $("#summary_main,#summary_price,#summary_price_margin,#bid_data_year").css({"height":h+"px"});
             var myChart=echarts.init(document.getElementById("summary_main"));
             var myChart_summary_price=echarts.init(document.getElementById("summary_price"));
             var myChart_summary_price_margin=echarts.init(document.getElementById("summary_price_margin"));
+            var myChart_bid_data_year=echarts.init(document.getElementById("bid_data_year"));
 
             function getSummaryData(fn){
                 $.getJSON("../file/summary.json",function(res){
@@ -37,6 +53,74 @@
             };
             getSummaryData(setEChartOption);
 
+            getBidDataByYear(setBidYearChart);
+
+            /*****************get bid data by year*****************************/
+            function getBidDataByYear(cb,year){
+                if(!year){
+                    year="2016";
+                }
+                $.getJSON("../file/bid_"+year+".json",function(res){
+                    cb(res,year);
+                });
+            };
+            /**************select bid year****************/
+            $("#bid_year_list a").click(function(e){
+                e.preventDefault();
+                $(this).siblings().removeClass("active");
+                $(this).addClass("active");
+                var year=$(this).data("year");
+                getBidDataByYear(setBidYearChart,year);
+            });
+            /***********set bid data year chart**************/
+            function setBidYearChart(data,year){
+                //x axis is 29:30, 29:31
+                var x_axis_data=[];
+                for(var i=30;i<60;i++){
+                    x_axis_data.push("29:"+i);
+                }
+                //series for each month
+                var month_series=[];
+                for(var month=0;month<data.months.length;month++){
+                    var month_data=[];
+                    for(var i=0;i<data.rows.length;i++){
+                        if(data.rows[i].bid_month == data.months[month]){
+                            month_data.push(data.rows[i].lowest_price);
+                        }
+                    }
+                    month_series.push({
+                        name:data.months[month],
+                        type:'line',
+                        data:month_data
+                    });
+                }
+                // 指定图表的配置项和数据
+                var option = {
+                    title: {
+                        text: year+'年每月拍卖价格走势图'
+                    },
+                    tooltip: {
+                        trigger:'axis'
+                    },
+                    legend: {
+                        data:data.months
+                    },
+                    xAxis: {
+                        type:'category',
+                        data: x_axis_data
+                    },
+                    yAxis: {
+                        type:'value',
+                        min:'dataMin'
+                    },
+                    series: month_series
+                };
+
+                // 使用刚指定的配置项和数据显示图表。
+                myChart_bid_data_year.setOption(option);
+            };
+
+            /*****************set summary chart******************/
             function setEChartOption(data){
                 setMainChart(data);
                 setMainPriceChart(data);
