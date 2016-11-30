@@ -1,0 +1,7 @@
+Hi
+Your book helps me a lot and I am really appreciated.
+In chapter 8, it is about the lwlr, when I try the code with my own data, it came up with a warning.
+The warning is about exp(diffMat*diffMat.T/(-2.0*k**2)).
+If the diffMat*diffMat.T is too big, then the exp() result will be very small and causes overflow.
+Is there any methods to deal with this kind of problem?
+Thank you very much
