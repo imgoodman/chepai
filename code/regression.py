@@ -72,10 +72,13 @@ def testLwlr():
     yHat10=lwlr(xArr[0],xArr,yArr,10)
     print('-------0.1--------')
     print(yHat01)
+    print(exp(yHat01))
     print('-------1--------')
     print(yHat1)
+    print(exp(yHat1))
     print('-------10--------')
     print(yHat10)
+    print(exp(yHat10))
 
 def compareRegress():
     xArr,yArr=loadDataSet()
