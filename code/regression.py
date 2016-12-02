@@ -49,6 +49,8 @@ def lwlr(testPoint,xArr,yArr,k=1.0):
         print("this matrix is singular, can not be inverse")
         return
     ws=xTx.I * xArr.T * weights * yArr
+    print('-------lwlr weights-----------')
+    print(ws)
     return testPoint*ws
 
 def lwlrTest(testArr,xArr,yArr,k=1.0):
@@ -65,7 +67,15 @@ def rssError(yArr,yHatArr):
 def testLwlr():
     xArr,yArr=loadDataSet()
     print(xArr[0])
-    yHat=lwlr(xArr[0],xArr,yArr,0.1)
+    yHat01=lwlr(xArr[0],xArr,yArr,0.1)    
+    yHat1=lwlr(xArr[0],xArr,yArr,1)    
+    yHat10=lwlr(xArr[0],xArr,yArr,10)
+    print('-------0.1--------')
+    print(yHat01)
+    print('-------1--------')
+    print(yHat1)
+    print('-------10--------')
+    print(yHat10)
 
 def compareRegress():
     xArr,yArr=loadDataSet()
