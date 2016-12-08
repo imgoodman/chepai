@@ -25,16 +25,25 @@ def standRegres(dataMat,labelMat):
 
 def testStandRegress():
     dataMat,labelMat=loadDataSet()
+    m,n=shape(dataMat)
+    print("data is:")
+    print(dataMat)
+    print("label is:")
+    print(labelMat)
     ws = standRegres(dataMat,labelMat)
+    print("weights of stand regression")
     print(ws)
     yHat=dataMat*ws
     cor=corrcoef(yHat.T,labelMat)
     print('relate weight')
     print(cor)
-    testData=[1,612,40,87500,86800,220000,11000]
-    testData=mat(testData)
-    testLabel=testData*ws
-    print(testLabel)
+    compareData=zeros((m,n+2))
+    compareData[:,:n]=dataMat
+    for i in range(m):
+        compareData[i,n]=exp(labelMat[0][i].A)
+        compareData[i,n+1]=exp(dataMat[i]*ws)
+    print('compare data is:')
+    print(compareData[:,n:])
 
 def lwlr(testPoint,xArr,yArr,k=1.0):
     yArr=yArr.T
@@ -95,4 +104,4 @@ def compareRegress():
     print(rssError10)
 
 if __name__=='__main__':
-    testLwlr()
+    testStandRegress()
