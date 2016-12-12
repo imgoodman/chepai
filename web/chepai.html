@@ -23,11 +23,20 @@
         </div>
         <div class="row">
             <div class="col-lg-2">
-                <h2>历年拍牌最后30秒的价格走势图</h2>
+                <h2>历年拍牌最后30秒的价格走势图（与线性回归对比）</h2>
                 <div class="list-group" id="bid_year_list">
-                    <a class="list-group-item active" data-year="2016">2016年</a>
-                    <a class="list-group-item" data-year="2015">2015年</a>
-                    <a class="list-group-item" data-year="2014">2014年</a>
+                    <a class="list-group-item" data-year="2016" data-quater="1">2016年第一季度</a>
+                    <a class="list-group-item" data-year="2016" data-quater="2">2016年第二季度</a>
+                    <a class="list-group-item" data-year="2016" data-quater="3">2016年第三季度</a>
+                    <a class="list-group-item active" data-year="2016" data-quater="4">2016年第四季度</a>
+                    <a class="list-group-item" data-year="2015" data-quater="1">2015年第一季度</a>
+                    <a class="list-group-item" data-year="2015" data-quater="2">2015年第二季度</a>
+                    <a class="list-group-item" data-year="2015" data-quater="3">2015年第三季度</a>
+                    <a class="list-group-item" data-year="2015" data-quater="4">2015年第四季度</a>
+                    <a class="list-group-item" data-year="2014" data-quater="1">2014年第一季度</a>
+                    <a class="list-group-item" data-year="2014" data-quater="2">2014年第二季度</a>
+                    <a class="list-group-item" data-year="2014" data-quater="3">2014年第三季度</a>
+                    <a class="list-group-item" data-year="2014" data-quater="4">2014年第四季度</a>
                 </div>
             </div>
             <div class="col-lg-10" style="min-height:600px;" id="bid_data_year"></div>
@@ -56,24 +65,39 @@
             getBidDataByYear(setBidYearChart);
 
             /*****************get bid data by year*****************************/
-            function getBidDataByYear(cb,year){
+            function getBidDataByYear(cb,year,quater){
                 if(!year){
                     year="2016";
+                    quater="4";
                 }
                 $.getJSON("../file/bid_"+year+".json",function(res){
-                    cb(res,year);
+                    cb(res,year,quater);
                 });
             };
-            /**************select bid year****************/
+            /**************select bid year 最后30秒 对比图****************/
             $("#bid_year_list a").click(function(e){
                 e.preventDefault();
                 $(this).siblings().removeClass("active");
                 $(this).addClass("active");
                 var year=$(this).data("year");
-                getBidDataByYear(setBidYearChart,year);
+                var quater=$(this).data("quater");
+                getBidDataByYear(setBidYearChart,year,quater);
             });
-            /***********set bid data year chart**************/
-            function setBidYearChart(data,year){
+            /***********set bid data year chart 最后30秒的对比图**************/
+            function setBidYearChart(data,year,quater){
+                var legend_data=[];
+                var months_in_quater=[];
+                for(var j=0;j<3;j++){
+                    var d_month=(parseInt(quater)-1)*3+j+1;
+                    if(d_month<10){
+                        d_month = "0"+d_month;
+                    }
+                    months_in_quater.push(year+''+d_month);
+                    legend_data.push(year+''+d_month);
+                    legend_data.push(year+''+d_month+'线性回归');
+                }
+                console.log(legend_data);
+                //console.log(months_in_quater);
                 //x axis is 29:30, 29:31
                 var x_axis_data=[];
                 for(var i=30;i<60;i++){
@@ -81,17 +105,24 @@
                 }
                 //series for each month
                 var month_series=[];
-                for(var month=0;month<data.months.length;month++){
+                for(var month=0;month<months_in_quater.length;month++){
                     var month_data=[];
+                    var stand_regress_data=[];
                     for(var i=0;i<data.rows.length;i++){
-                        if(data.rows[i].bid_month == data.months[month]){
+                        if(data.rows[i].bid_month == months_in_quater[month]){
                             month_data.push(data.rows[i].lowest_price);
+                            stand_regress_data.push(data.rows[i].stand_regress_value);
                         }
                     }
                     month_series.push({
-                        name:data.months[month],
+                        name:months_in_quater[month]+"真实",
                         type:'line',
                         data:month_data
+                    });
+                    month_series.push({
+                        name:months_in_quater[month]+"线性回归",
+                        type:'line',
+                        data:stand_regress_data
                     });
                 }
                 // 指定图表的配置项和数据
@@ -100,7 +131,7 @@
                         trigger:'axis'
                     },
                     legend: {
-                        data:data.months
+                        data:legend_data
                     },
                     xAxis: {
                         type:'category',

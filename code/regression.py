@@ -1,17 +1,20 @@
 from numpy import *
 import db
+import pymysql
+import confidentials
 
 def loadDataSet():
     rows=db.loadDataSet()
     dataMat=[]
     labelMat=[]
+    idMat=[]
     for row in rows:
         dMat=[1]
-        dMat.extend(row[:-1])
-        lMat=row[-1]
+        dMat.extend(row[1:-1])
         dataMat.append(dMat)
-        labelMat.append(lMat)
-    return mat(dataMat),mat(labelMat)
+        labelMat.append(row[-1])
+        idMat.append(int(row[0]))
+    return mat(dataMat),mat(labelMat),idMat
 
 
 def standRegres(dataMat,labelMat):
@@ -23,13 +26,15 @@ def standRegres(dataMat,labelMat):
     ws=xTx.I * dataMat.T * labelMat
     return ws
 
-def testStandRegress():
-    dataMat,labelMat=loadDataSet()
+def testStandRegress(cb):
+    dataMat,labelMat,idMat=loadDataSet()
     m,n=shape(dataMat)
     print("data is:")
     print(dataMat)
     print("label is:")
     print(labelMat)
+    print("id is:")
+    print(idMat)
     ws = standRegres(dataMat,labelMat)
     print("weights of stand regression")
     print(ws)
@@ -37,13 +42,26 @@ def testStandRegress():
     cor=corrcoef(yHat.T,labelMat)
     print('relate weight')
     print(cor)
-    compareData=zeros((m,n+2))
-    compareData[:,:n]=dataMat
+    compareData=zeros((m,3))
     for i in range(m):
-        compareData[i,n]=exp(labelMat[0][i].A)
-        compareData[i,n+1]=exp(dataMat[i]*ws)
+        compareData[i,0]=idMat[i]
+        compareData[i,1]=exp(labelMat[0,i])
+        compareData[i,2]=exp(dataMat[i]*ws)
     print('compare data is:')
-    print(compareData[:,n:])
+    print(compareData)
+    if cb!=None:
+        cb(compareData)
+
+def saveStandRegressValue(values):
+    secrets=confidentials.getMySqlAuth()
+    conn=pymysql.connect(host=secrets[0],user=secrets[1],passwd=secrets[2],db=secrets[3])
+    cur=conn.cursor()
+    for value in values:
+        sql='update t_bid_data set stand_regress_value=%s where id=%s' % (value[2],int(value[0]))
+        print(sql)
+        cur.execute(sql)
+    cur.close()
+    conn.close()
 
 def lwlr(testPoint,xArr,yArr,k=1.0):
     yArr=yArr.T

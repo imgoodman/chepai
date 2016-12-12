@@ -198,16 +198,18 @@ def getBidDataJsonFromDB(yearStart=2016,yearEnd=2016):
             data["months"].append(bid_month)
             for second in range(30,60):
                 system_time='11:29:'+str(second)
-                sql='select lowest_price from t_bid_data where bid_month="%s" and system_time="%s"' % (bid_month,system_time)
+                sql='select lowest_price,stand_regress_value from t_bid_data where bid_month="%s" and system_time="%s"' % (bid_month,system_time)
                 cur.execute(sql)
                 r=cur.fetchone()
                 lowest_price=0
+                stand_regress_value=0
                 if cur.rowcount>0:
                     lowest_price=r[0]
+                    stand_regress_value=int(r[1])
                 else:
                     print(bid_month+' '+system_time+' no data ')
-                print(bid_month+' '+system_time+' '+str(lowest_price))
-                data["rows"].append({"bid_month":bid_month,"system_time":system_time,"lowest_price":lowest_price})
+                print(bid_month+' '+system_time+' '+str(lowest_price)+' '+str(stand_regress_value))
+                data["rows"].append({"bid_month":bid_month,"system_time":system_time,"lowest_price":lowest_price,"stand_regress_value":stand_regress_value})
         file_bid_data=open('../data/bid_'+str(year)+'.json','w')
         file_bid_data.write(json.dumps(data))
         file_bid_data.close()
@@ -217,14 +219,14 @@ def getAllBidData():
     conn=pymysql.connect(host=secrets[0],user=secrets[1],passwd=secrets[2],db=secrets[3])
     cur=conn.cursor()
     cur.execute('use ' +secrets[3])
-    sql='select a.bid_month,a.system_time,a.lowest_price,b.alert_price,b.bid_people_num,b.license_num,b.lowest_price as final_lowest_price from t_bid_data as a left join t_bid_summary as b on a.bid_month=b.bid_month where b.alert_price>0 and a.system_time>="11:29:30" and a.system_time<="11:29:59" order by a.bid_month desc,a.system_time asc'
+    sql='select a.bid_month,a.system_time,a.lowest_price,b.alert_price,b.bid_people_num,b.license_num,b.lowest_price as final_lowest_price,a.id from t_bid_data as a left join t_bid_summary as b on a.bid_month=b.bid_month where b.alert_price>0 and a.system_time>="11:29:30" and a.system_time<="11:29:59" order by a.bid_month desc,a.system_time asc'
     cur.execute(sql)
     data=''
     rows=cur.fetchall()
     for r in rows:
         print(r)
         t=r[1].split(':')[2]
-        data+=r[0]+'\t'+t+'\t'+str(r[2])+'\t'+str(r[3])+'\t'+str(r[4])+'\t'+str(r[5])+'\t'+str(r[6])+'\n'
+        data+=str(r[7])+'\t'+r[0]+'\t'+t+'\t'+str(r[2])+'\t'+str(r[3])+'\t'+str(r[4])+'\t'+str(r[5])+'\t'+str(r[6])+'\n'
     data_file=open('../data/bid_data_all.txt','w')
     data_file.write(data)
     data_file.close()
@@ -235,5 +237,5 @@ def getAllBidData():
 #scrapySummaryData()
 #getJsonFromSummaryData()
 #getBidDataFromDB(yearStart=2013,yearEnd=2016)
-#getBidDataJsonFromDB(yearStart=2013,yearEnd=2016)
-getAllBidData()
+getBidDataJsonFromDB(yearStart=2014,yearEnd=2016)
+#getAllBidData()
