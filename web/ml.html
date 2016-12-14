@@ -63,11 +63,13 @@
             /***********set bid data year chart 最后30秒的对比图**************/
             function setBidYearChart(data,year,quater){
                 var month_data=[];
+                var stand_regress_data=[];
                 for(var month=0;month<data.length;month++){
                     var bid_month=data[month].bid_month;
                     for(var i=0;i<data[month].rows.length;i++){
                         var row=data[month].rows[i];
                         month_data.push([row.system_time.substr(3),row.lowest_price,bid_month]);
+                        stand_regress_data.push([row.system_time.substr(3),row.stand_regress_value,bid_month]);
                     }
                 }
                 //console.log(month_data);
@@ -82,12 +84,20 @@
                         text: year +'年每月拍卖最后30秒价格散点图'
                     },
                     legend: {
-                        right: 10,
-                        data: ['实际价格']
+                        left: 'center',
+                        data: ['实际价格','线性回归']
                     },
                     tooltip:{
                         formatter:function(params){
                             return params.value[2]+' '+params.value[0]+' '+params.seriesName+':'+params.value[1];
+                        },
+                        axisPointer:{
+                            show: true,
+                            type : 'cross',
+                            lineStyle: {
+                                type : 'dashed',
+                                width : 1
+                            }
                         }
                     },
                     xAxis: {
@@ -99,9 +109,13 @@
                         scale: true
                     },
                     series: [{
-                        name:["实际价格"],
+                        name:"实际价格",
                         type:'scatter',
                         data:month_data
+                    },{
+                        name:'线性回归',
+                        type:'scatter',
+                        data:stand_regress_data
                     }]
                 };
 
