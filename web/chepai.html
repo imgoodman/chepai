@@ -85,7 +85,6 @@
             });
             /***********set bid data year chart 最后30秒的对比图**************/
             function setBidYearChart(data,year,quater){
-                var legend_data=[];
                 var months_in_quater=[];
                 for(var j=0;j<3;j++){
                     var d_month=(parseInt(quater)-1)*3+j+1;
@@ -93,10 +92,8 @@
                         d_month = "0"+d_month;
                     }
                     months_in_quater.push(year+''+d_month);
-                    legend_data.push(year+''+d_month);
-                    legend_data.push(year+''+d_month+'线性回归');
                 }
-                console.log(legend_data);
+                //console.log(legend_data);
                 //console.log(months_in_quater);
                 //x axis is 29:30, 29:31
                 var x_axis_data=[];
@@ -115,14 +112,9 @@
                         }
                     }
                     month_series.push({
-                        name:months_in_quater[month]+"真实",
+                        name:months_in_quater[month],
                         type:'line',
                         data:month_data
-                    });
-                    month_series.push({
-                        name:months_in_quater[month]+"线性回归",
-                        type:'line',
-                        data:stand_regress_data
                     });
                 }
                 // 指定图表的配置项和数据
@@ -131,7 +123,7 @@
                         trigger:'axis'
                     },
                     legend: {
-                        data:legend_data
+                        data:months_in_quater
                     },
                     xAxis: {
                         type:'category',
@@ -275,7 +267,7 @@
             function setMainPriceMarginChart(data){
                 var option = {
                     title: {
-                        text: '历年车牌拍卖价格数据（不包含无警示价的月份）'
+                        text: '成交价与警示价的差价（不包含无警示价的月份）'
                     },
                     tooltip: {
                         trigger:'axis'

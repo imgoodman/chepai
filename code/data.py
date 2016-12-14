@@ -233,9 +233,35 @@ def getAllBidData():
     cur.close()
     conn.close()
 
+
+def getJsonOfPriceTimeOfYear(year=2016):
+    secrets=confidentials.getMySqlAuth()
+    conn=pymysql.connect(host=secrets[0],user=secrets[1],passwd=secrets[2],db=secrets[3])
+    cur=conn.cursor()
+    data=[]
+    for i in range(1,13):
+        if i<10:
+            i='0'+str(i)
+        bid_month=str(year)+str(i)
+        sql='select system_time,lowest_price,stand_regress_value from t_bid_data where system_time>="11:29:30" and system_time<="11:29:59" and bid_month="'+bid_month+'" order by system_time asc'
+        cur.execute(sql)
+        if cur.rowcount>0:
+            d={}
+            d["bid_month"]=bid_month
+            d["rows"]=[]
+            rows=cur.fetchall()
+            for row in rows:
+                d["rows"].append({"system_time":row[0],"lowest_price":row[1],"stand_regress_value":int(row[2])})
+            data.append(d)
+    data_file=open('../data/bid_'+str(year)+'_time_price.json','w')
+    data_file.write(json.dumps(data))
+    cur.close()
+    conn.close()
+
 #beginScrapyData()
 #scrapySummaryData()
 #getJsonFromSummaryData()
 #getBidDataFromDB(yearStart=2013,yearEnd=2016)
-getBidDataJsonFromDB(yearStart=2014,yearEnd=2016)
+#getBidDataJsonFromDB(yearStart=2014,yearEnd=2016)
 #getAllBidData()
+getJsonOfPriceTimeOfYear()
