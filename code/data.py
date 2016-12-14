@@ -264,4 +264,4 @@ def getJsonOfPriceTimeOfYear(year=2016):
 #getBidDataFromDB(yearStart=2013,yearEnd=2016)
 #getBidDataJsonFromDB(yearStart=2014,yearEnd=2016)
 #getAllBidData()
-getJsonOfPriceTimeOfYear()
+getJsonOfPriceTimeOfYear(year=2014)

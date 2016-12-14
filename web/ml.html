@@ -12,18 +12,18 @@
             <div class="col-lg-2">
                 <h2>历年拍牌最后30秒的价格走势图（与线性回归对比）</h2>
                 <div class="list-group" id="bid_year_list">
-                    <a class="list-group-item" data-year="2016" data-quater="1">2016年第一季度</a>
-                    <a class="list-group-item" data-year="2016" data-quater="2">2016年第二季度</a>
+                    <a class="list-group-item active" data-year="2016" data-quater="1">2016年</a>
+                    <!--<a class="list-group-item" data-year="2016" data-quater="2">2016年第二季度</a>
                     <a class="list-group-item" data-year="2016" data-quater="3">2016年第三季度</a>
-                    <a class="list-group-item active" data-year="2016" data-quater="4">2016年第四季度</a>
-                    <a class="list-group-item" data-year="2015" data-quater="1">2015年第一季度</a>
-                    <a class="list-group-item" data-year="2015" data-quater="2">2015年第二季度</a>
+                    <a class="list-group-item active" data-year="2016" data-quater="4">2016年第四季度</a>-->
+                    <a class="list-group-item" data-year="2015" data-quater="1">2015年</a>
+                    <!--<a class="list-group-item" data-year="2015" data-quater="2">2015年第二季度</a>
                     <a class="list-group-item" data-year="2015" data-quater="3">2015年第三季度</a>
-                    <a class="list-group-item" data-year="2015" data-quater="4">2015年第四季度</a>
-                    <a class="list-group-item" data-year="2014" data-quater="1">2014年第一季度</a>
-                    <a class="list-group-item" data-year="2014" data-quater="2">2014年第二季度</a>
+                    <a class="list-group-item" data-year="2015" data-quater="4">2015年第四季度</a>-->
+                    <a class="list-group-item" data-year="2014" data-quater="1">2014年</a>
+                    <!--<a class="list-group-item" data-year="2014" data-quater="2">2014年第二季度</a>
                     <a class="list-group-item" data-year="2014" data-quater="3">2014年第三季度</a>
-                    <a class="list-group-item" data-year="2014" data-quater="4">2014年第四季度</a>
+                    <a class="list-group-item" data-year="2014" data-quater="4">2014年第四季度</a>-->
                 </div>
             </div>
             <div class="col-lg-10" style="min-height:600px;" id="bid_data_year"></div>
@@ -90,14 +90,6 @@
                     tooltip:{
                         formatter:function(params){
                             return params.value[2]+' '+params.value[0]+' '+params.seriesName+':'+params.value[1];
-                        },
-                        axisPointer:{
-                            show: true,
-                            type : 'cross',
-                            lineStyle: {
-                                type : 'dashed',
-                                width : 1
-                            }
                         }
                     },
                     xAxis: {
