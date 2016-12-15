@@ -176,7 +176,7 @@ def getBidDataFromDB(yearStart=2016,yearEnd=2016):
         file_bid_data.write(data)
         file_bid_data.close()
 
-def getBidDataJsonFromDB(yearStart=2016,yearEnd=2016):
+def getBidDataJsonFromDB(yearStart=2014,yearEnd=2016):
     secrets=confidentials.getMySqlAuth()
     conn=pymysql.connect(host=secrets[0],user=secrets[1],passwd=secrets[2],db=secrets[3])
     cur=conn.cursor()
@@ -198,7 +198,7 @@ def getBidDataJsonFromDB(yearStart=2016,yearEnd=2016):
             data["months"].append(bid_month)
             for second in range(30,60):
                 system_time='11:29:'+str(second)
-                sql='select lowest_price,stand_regress_value from t_bid_data where bid_month="%s" and system_time="%s"' % (bid_month,system_time)
+                sql='select lowest_price,stand_regress_value,final_margin_price from t_bid_data where bid_month="%s" and system_time="%s"' % (bid_month,system_time)
                 cur.execute(sql)
                 r=cur.fetchone()
                 lowest_price=0
@@ -209,7 +209,7 @@ def getBidDataJsonFromDB(yearStart=2016,yearEnd=2016):
                 else:
                     print(bid_month+' '+system_time+' no data ')
                 print(bid_month+' '+system_time+' '+str(lowest_price)+' '+str(stand_regress_value))
-                data["rows"].append({"bid_month":bid_month,"system_time":system_time,"lowest_price":lowest_price,"stand_regress_value":stand_regress_value})
+                data["rows"].append({"bid_month":bid_month,"system_time":system_time,"lowest_price":lowest_price,"stand_regress_value":stand_regress_value,"final_margin_price":r[2]})
         file_bid_data=open('../data/bid_'+str(year)+'.json','w')
         file_bid_data.write(json.dumps(data))
         file_bid_data.close()
@@ -258,10 +258,39 @@ def getJsonOfPriceTimeOfYear(year=2016):
     cur.close()
     conn.close()
 
+
+def calculateFinalMarginPrice(year=2014):
+    secrets=confidentials.getMySqlAuth()
+    conn=pymysql.connect(host=secrets[0],user=secrets[1],passwd=secrets[2],db=secrets[3])
+    cur=conn.cursor()
+    for month in range(1,13):
+        if month<10:
+            month="0"+str(month)
+        bid_month=str(year)+str(month)
+        sql='select lowest_price from t_bid_data where bid_month=%s and system_time="11:29:59"' % (bid_month)
+        cur.execute(sql)
+        if cur.rowcount>0:
+            final_lowest_price=float(cur.fetchone()[0])
+
+            for t in range(30,59):
+                system_time='11:29:'+str(t)
+                sql='select lowest_price from t_bid_data where bid_month="%s" and system_time="%s"' % (bid_month,system_time)
+                print(sql)
+                cur.execute(sql)
+                if cur.rowcount>0:
+                    t_lowest_price=float(cur.fetchone()[0])
+                    margin_price=final_lowest_price - t_lowest_price
+                    sql='update t_bid_data set final_margin_price=%f where bid_month="%s" and system_time="%s"' % (margin_price,bid_month,system_time)
+                    print(sql)
+                    cur.execute(sql)
+    cur.close()
+    conn.close()
+
 #beginScrapyData()
 #scrapySummaryData()
 #getJsonFromSummaryData()
 #getBidDataFromDB(yearStart=2013,yearEnd=2016)
-#getBidDataJsonFromDB(yearStart=2014,yearEnd=2016)
+getBidDataJsonFromDB(yearStart=2014,yearEnd=2016)
 #getAllBidData()
-getJsonOfPriceTimeOfYear(year=2014)
+#getJsonOfPriceTimeOfYear(year=2014)
+#calculateFinalMarginPrice()
