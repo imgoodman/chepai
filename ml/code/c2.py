@@ -3,6 +3,7 @@ import csv
 
 from sklearn.cross_validation import train_test_split
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.cross_validation import cross_val_score
 
 def test():
     with open('../data/ionosphere.data','r') as input_file:
@@ -25,6 +26,10 @@ def test():
         accuracy = mean(Y_test==Y_predict)*100
 
         print('the accuracy is {0:.1f%}'.format(accuracy))
+
+        scores = cross_val_score(estimator,X, Y, scoring='accuracy')
+        average_accuracy = mean(scores)*100
+        print('the average accuracy is {0:.1f}%'.format(average_accuracy))
 
 
 if __name__=='__main__':
