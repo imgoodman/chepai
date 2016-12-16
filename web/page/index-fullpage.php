@@ -13,6 +13,7 @@
     <link rel="stylesheet" type="text/css" href="src/bootstrap-3.2.0-dist/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="src/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="src/css/infoTip.css">
+	<link rel="stylesheet" type="text/css" href="src/fullPage/dist/jquery.fullpage.min.css">
     <link rel="stylesheet" type="text/css" href="src/css/main.css">
 
 </head>
@@ -54,6 +55,11 @@
 				</ul>
 			</div>
 		</div>
+	</div>
+	<div id="fullpage">
+		<div class="section" style="background-colot:red;"></div>
+		<div class="section" style="background-colot:green;"></div>
+		<div class="section" style="background-colot:blue;"></div>
 	</div>
 	<div class="container-fluid" id="main_wrapper">
 		<div class="row">
@@ -505,10 +511,13 @@
 		<script type="text/javascript" src="src/js/jquery-1.11.0.min.js"></script>
 		<script type="text/javascript" src="src/bootstrap-3.2.0-dist/js/bootstrap.min.js"></script>
 		<script type="text/javascript" src="src/js/infoTip.js"></script>
+		<script type="text/javascript" src="src/fullPage/dist/jquery.fullpage.min.js"></script>
 		<script type="text/javascript" src="src/chartjs/Chart.min.js"></script>
 		<script type="text/javascript" src="src/js/smoothscroll.js"></script>
 	<script type="text/javascript">
 		$(document).ready(function(){
+
+			$("#fullpage").fullpage();
 			//cet6
 			/*var doughnutDataCet6 = [{value: 85,color:"#1abc9c"},{value : 15,color : "#ecf0f1"}];
 			var ctxCet6 = document.getElementById("cet6").getContext("2d");
