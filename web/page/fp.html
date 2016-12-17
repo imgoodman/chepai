@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title></title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="../src/fullPage/dist/jquery.fullpage.min.css" rel="stylesheet">
+    </head>
+    <body>
+        <div id="header" style="background-color: #eee;height: 60px;position: fixed;top:0;width:100%;"></div>
+        <div id="fullpage">
+            <div class="section">page 1</div>
+            <div class="section">
+                <div class="slide">slide 1</div>
+                <div class="slide">slide 2</div>
+                <div class="slide">slide 3</div>
+                <div class="slide">slide 4</div>
+                <div class="slide">slide 5</div>
+            </div>
+            <div class="section">page 3</div>
+            <div class="section">page 4</div>
+        </div>
+        <div id="footer" style="background-color: #eee;height: 105px;position: fixed;bottom:0;width:100%;"></div>
+
+        <script type="text/javascript" src="../src/js/jquery-1.11.0.min.js"></script>
+        <script type="text/javascript" src="../src/fullPage/dist/jquery.fullpage.min.js"></script>
+        <script type="text/javascript">
+            $(function(){
+                $("#fullpage").fullpage({
+                    sectionsColor:['green','red','blue','orange'],
+                    //controlArrows:true,
+                    //verticalCentered:true,
+                    //resize:false,
+                    //scrollingSpeed:1000,
+                    //anchors:['page1','page2','page3','page4'],
+                    //lockAnchors:true,
+                    //loopTop:false,
+                    //loopBottom:false,
+                    //loopHorizontal:false,
+                    //autoScrolling:true,
+                    //scrollBar:true,
+                    //paddingTop:'60px',
+                    //paddingBottom:'105px',
+                    //fixedElements:'#header,#footer',
+                    //keyboardScrolling:true,
+                    //menu:'#id',
+                    navigation:true,
+                    navigationPosition:'right',
+                    navigationTooltips:[],
+                    showActiveTooltip:true,
+                    slidesNavigation:true,
+                    slidesNavPosition:'bottom'
+                });
+            });
+        </script>
+    </body>
+</html>
