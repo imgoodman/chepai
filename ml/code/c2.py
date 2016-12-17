@@ -31,6 +31,16 @@ def test():
         average_accuracy = mean(scores)*100
         print('the average accuracy is {0:.1f}%'.format(average_accuracy))
 
+        avg_scores=[]
+        all_scores=[]
+        parameter_values=list(range(1,21))
+        for n_neighbors in parameter_values:
+            estimator=KNeighborsClassifier(n_neighbors=n_neighbors)
+            scores=cross_val_score(estimator,X,Y,scoring='accuracy')
+
+            avg_scores.append(mean(scores))
+            all_scores.append(scores)
+
 
 if __name__=='__main__':
     test()
