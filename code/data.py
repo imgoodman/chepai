@@ -26,6 +26,20 @@ def beginScrapyData(baseUrl="http://bidwiz.duapp.com/bwCheckController.do?getBid
     #saveBidDataToCSV(bidData)
     saveBidDataToDB(allData)
 
+def scrapyDataOfMonth(baseUrl="http://bidwiz.duapp.com/bwCheckController.do?getBidHistoricalData",year=2016,month=12,maxPages=5,maxPageSize=60):
+    allData=[]
+    for page in range(1,maxPages):
+        bidData=scrapyData(baseUrl,year,month,page,maxPageSize)
+        sleep(5)
+        if bidData==None:
+            print("fail to scrapy data")
+            continue
+        bidData =json.loads(str(bidData))
+        #print(bidData)
+        for d in bidData["rows"]:
+            #print(d)
+            allData.append(d)
+    saveBidDataToDB(allData)
 
 def scrapyData(baseUrl,year,month,page,pageSize=60):
     param={}
@@ -290,7 +304,8 @@ def calculateFinalMarginPrice(year=2014):
 #scrapySummaryData()
 #getJsonFromSummaryData()
 #getBidDataFromDB(yearStart=2013,yearEnd=2016)
-getBidDataJsonFromDB(yearStart=2014,yearEnd=2016)
+#getBidDataJsonFromDB(yearStart=2014,yearEnd=2016)
 #getAllBidData()
 #getJsonOfPriceTimeOfYear(year=2014)
 #calculateFinalMarginPrice()
+scrapyDataOfMonth()
