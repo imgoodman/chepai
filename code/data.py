@@ -172,7 +172,7 @@ def saveBidDataToCSV(bidData,fileName="bidData.csv"):
 """
 save all bid data including summary to csv file
 """
-def saveAllBidDataToCSV(fileName,startTime,endTime):
+def saveAllBidDataToCSV(fileName,startTime=None,endTime=None):
     secrets=confidentials.getMySqlAuth()
     conn=pymysql.connect(host=secrets[0],user=secrets[1],passwd=secrets[2],db=secrets[3])
     conn.set_charset("utf8")
@@ -180,7 +180,7 @@ def saveAllBidDataToCSV(fileName,startTime,endTime):
     cur.execute("set names utf8;")
     cur.execute("set character set utf8;")
     cur.execute("set character_set_connection=utf8;")
-    sql='select b.id,b.system_time,b.lowest_price_time as real_lowest_price_time,b.lowest_price as real_lowest_price,b.lowest_price_from as real_lowest_price_from,b.lowest_price_to as real_lowest_price_to,a.bid_date,a.alert_price,a.avg_price,a.bid_people_num,a.bid_percent,a.license_num,a.lowest_price,a.lowest_price_time,a.lowest_price_time as tmp from t_bid_summary as a left join t_bid_data as b on a.bid_month=b.bid_month where 1=1 '
+    sql='select b.id,b.bid_month,b.system_time,b.lowest_price_time as real_lowest_price_time,b.lowest_price as real_lowest_price,b.lowest_price_from as real_lowest_price_from,b.lowest_price_to as real_lowest_price_to,a.bid_date,a.alert_price,a.avg_price,a.bid_people_num,a.bid_percent,a.license_num,a.lowest_price,a.lowest_price_time,a.lowest_price_time as tmp from t_bid_summary as a left join t_bid_data as b on a.bid_month=b.bid_month where 1=1 '
     if startTime!=None:
         sql+=' and system_time>="'+startTime+'"'
     if endTime!=None:
@@ -197,6 +197,53 @@ def saveAllBidDataToCSV(fileName,startTime,endTime):
             row=list(row)
             lowest_price_time=str(row[len(row)-1])
             lowest_price_time_1=lowest_price_time[:8]
+            lowest_price_time_2=lowest_price_time[10:-1]
+            #print(lowest_price_time_1+":::::"+lowest_price_time_2)
+            row[len(row)-2]=lowest_price_time_1
+            row[len(row)-1]=lowest_price_time_2
+            writer.writerow(row)
+    csvFile.close()
+    cur.close()
+    conn.close()
+
+"""
+save useful (30-60) bid data including summary to csv file
+"""
+def save30260UsefulBidDataToCSV(fileName="30_60_useful_bid_data.csv",startTime="11:29:30",endTime="11:30:00"):
+    secrets=confidentials.getMySqlAuth()
+    conn=pymysql.connect(host=secrets[0],user=secrets[1],passwd=secrets[2],db=secrets[3])
+    conn.set_charset("utf8")
+    cur=conn.cursor()
+    cur.execute("set names utf8;")
+    cur.execute("set character set utf8;")
+    cur.execute("set character_set_connection=utf8;")
+    sql='select b.id,b.bid_month,b.system_time,b.lowest_price_time as real_lowest_price_time,b.lowest_price as real_lowest_price,a.alert_price,a.avg_price,a.bid_people_num,a.license_num,a.lowest_price,a.lowest_price_time,a.lowest_price_time as tmp from t_bid_summary as a left join t_bid_data as b on a.bid_month=b.bid_month where 1=1 '
+    if startTime!=None:
+        sql+=' and system_time>="'+startTime+'"'
+    if endTime!=None:
+        sql+=' and system_time<="'+endTime+'"'
+    sql+=' ORDER BY a.bid_month desc,b.system_time ASC'
+    cur.execute(sql)
+    csvFile = open("../data/"+fileName,"w+",newline='')
+    writer=csv.writer(csvFile)
+    writer.writerow(("id","bid_month","system_time","real_lowest_price_time","real_lowest_price","alert_price","avg_price","bid_people_num","license_num","lowest_price","lowest_price_time","lowest_price_time_order"))
+    rows=cur.fetchall()
+    for row in rows:
+        print(row)
+        if row[0]!=None:
+            row=list(row)
+            #bid_month 201612 is converted to 16.12
+            row[1]=str(row[1])
+            row[1]=row[1][2:4]+"."+row[1][-2:]
+            #system_time 11:29:30 is converted to 9.30, if it is 11:30:00, then to 9.60
+            row[2]=str(row[2])
+            if row[2][-2:]=="00":
+                row[2]="9.60"
+            else:
+                row[2]=row[2][-4:].replace(":",".")
+            row[3]=str(row[3])[-4:].replace(":",".")
+            lowest_price_time=str(row[len(row)-1])
+            lowest_price_time_1=lowest_price_time[:8][-4:].replace(":",".")
             lowest_price_time_2=lowest_price_time[10:-1]
             #print(lowest_price_time_1+":::::"+lowest_price_time_2)
             row[len(row)-2]=lowest_price_time_1
@@ -400,4 +447,6 @@ def calculateFinalMarginPrice(year=2014):
 #scrapyDataOfMonth()
 #scrapySummaryDataOfMonth()
 #saveNewestMonthData()
-saveAllBidDataToCSV(fileName="30_60_bid_data.csv",startTime="11:29:30",endTime="11:30:00")
+#saveAllBidDataToCSV(fileName="all_bid_data.csv")
+#saveAllBidDataToCSV(fileName="30_60_bid_data.csv",startTime="11:29:30",endTime="11:30:00")
+save30260UsefulBidDataToCSV()
