@@ -226,7 +226,7 @@ def save30260UsefulBidDataToCSV(fileName="30_60_useful_bid_data.csv",startTime="
     cur.execute(sql)
     csvFile = open("../data/"+fileName,"w+",newline='')
     writer=csv.writer(csvFile)
-    writer.writerow(("id","bid_month","system_time","real_lowest_price_time","real_lowest_price","alert_price","avg_price","bid_people_num","license_num","lowest_price","lowest_price_time","lowest_price_time_order"))
+    writer.writerow(("id","bid_month","system_time","real_lowest_price_time","real_lowest_price","alert_price","avg_price","bid_people_num","license_num","lowest_price","lowest_price_time","lowest_price_time_order","result"))
     rows=cur.fetchall()
     for row in rows:
         print(row)
@@ -248,6 +248,10 @@ def save30260UsefulBidDataToCSV(fileName="30_60_useful_bid_data.csv",startTime="
             #print(lowest_price_time_1+":::::"+lowest_price_time_2)
             row[len(row)-2]=lowest_price_time_1
             row[len(row)-1]=lowest_price_time_2
+            if row[4]==row[9]:
+                row.append(1)
+            else:
+                row.append(0)
             writer.writerow(row)
     csvFile.close()
     cur.close()
