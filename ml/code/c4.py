@@ -2,6 +2,7 @@ import pandas as pd
 import os
 from collections import defaultdict
 import sys
+from operator import itemgetter
 
 def loadDataSet():
     ratings_filename=os.path.join("D:\python\ml-20m\ml-20m","ratings.csv")
@@ -44,6 +45,76 @@ def loadDataSet():
     del frequent_itemsets[1]
     print(frequent_itemsets)
 
+    candidate_rules=[]
+    for itemset_length,itemset_counts in frequent_itemsets.items():
+        for itemset in itemset_counts.keys():
+            for conclusion in itemset:
+                premise = itemset - set((conclusion,))
+                candidate_rules.append((premise,conclusion))
+    print(candidate_rules)
+
+    correct_counts = defaultdict(int)
+    incorrect_counts = defaultdict(int)
+    for user,reviews in favorable_reviews_by_users.items():
+        for candidate_rule in candidate_rules:
+            premise,conclusion=candidate_rule
+            if premise.issubset(reviews):
+                if conclusion in reviews:
+                    correct_counts[candidate_rule] +=1
+                else:
+                    incorrect_counts[candidate_rule]+=1
+    rule_confidence = {candidate_rule:correct_counts[candidate_rule]/float( correct_counts[candidate_rule]+incorrect_counts[candidate_rule] ) for candidate_rule in candidate_rules }
+
+    sorted_confidence = sorted( rule_confidence.items(), key=itemgetter(1), reverse=True  )
+
+
+    movie_name_data = loadMovieData()
+    #print(movie_name_data[movie_name_data['movieId']=="1"]['title'].values[0])
+
+    for index in range(5):
+        print('Rule #{0}'.format(index+1))
+        premise,conclusion = sorted_confidence[index][0]
+        premise_names =', '.join([get_movie_name(idx,movie_name_data) for idx in premise])
+        conclusion_name=get_movie_name(conclusion,movie_name_data)
+        print('Rule: IF a person recommends {0}, THEN they will also recommend {1}'.format(premise_names,conclusion_name))
+        print(' -- Confidence: {0:.3f}'.format(rule_confidence[(premise,conclusion)]))
+        print("")
+    
+
+    test_dataset = all_ratings[~all_ratings['userId'].isin(range(200))]
+    test_favorable = test_dataset[test_dataset['favorable']]
+    test_favorable_by_users = dict( (k,frozenset(v.values,))  for k,v in test_favorable.groupby('userId')["movieId"] )
+    test_correct_counts=defaultdict(int)
+    test_incorrect_counts=defaultdict(int)
+    for user,reviews in test_favorable_by_users.items():
+        for candidate_rule in candidate_rules:
+            premise,conclusion=candidate_rule
+            if premise.issubset(reviews):
+                if conclusion in reviews:
+                    test_correct_counts[candidate_rule]+=1
+                else:
+                    test_incorrect_counts[candidate_rule]+=1
+    test_rule_confidence ={ candidate_rule: test_correct_counts[candidate_rule]/float(test_correct_counts[candidate_rule]+test_incorrect_counts[candidate_rule])   for candidate_rule in candidate_rules }
+
+    # test_sorted_confidence = sorted(test_rule_confidence.items(), key=itemgetter(1),reverse=True)
+    for index in range(5):
+        print('Rule #{0}'.format(index+1))
+        premise,conclusion = sorted_confidence[index][0]
+        premise_names= ', '.join([get_movie_name(idx,movie_name_data) for idx in premise])
+        conclusion_name = get_movie_name(conclusion,movie_name_data)
+        print('Rule: IF a person recommends {0}, THEN they will also recommend {1}'.format(premise_names,conclusion_name))
+        print(' -- Train confidence:{0:.3f}'.format(rule_confidence[(premise,conclusion)]))
+        print(' -- Test confidence:{0:.3f}'.format(test_rule_confidence[(premise,conclusion)]))
+
+
+
+def loadMovieData():
+    movie_name_data = pd.read_csv(os.path.join("D:\python\ml-20m\ml-20m","movies.csv"),names=["movieId",'title','genres'])
+    return movie_name_data
+
+def get_movie_name(movie_id,movie_name_data):
+    title= movie_name_data[movie_name_data['movieId']==str(movie_id)]['title'].values[0]
+    return title
 
 def find_frequent_itemsets(favorable_reviews_by_users, k_1_itemsets, min_support):
     counts=defaultdict(int)
