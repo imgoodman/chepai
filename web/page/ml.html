@@ -5,10 +5,14 @@
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <link href="../src/bootstrap-3.2.0-dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="../src/fullPage/dist/jquery.fullpage.min.css" rel="stylesheet">
     </head>
     <body>
-    <div class="container-fluid">
-        <div class="row">
+    <div class="container-fluid" id="fullpage">
+        <div class="section row">
+            <div class="col-lg-3"></div>
+        </div>
+        <div class="row section">
             <div class="col-lg-2">
                 <h2>历年拍牌最后30秒的价格走势图（与线性回归对比）</h2>
                 <div class="list-group" id="bid_year_list">
@@ -33,6 +37,7 @@
     <script src="../src/js/jquery-1.11.0.min.js"></script>
     <script type="text/javascript" src="../src/bootstrap-3.2.0-dist/js/bootstrap.min.js"></script>
     <script type="text/javascript" src="../src/echarts/echarts.min.js"></script>
+    <script type="text/javascript" src="../src/fullPage/dist/jquery.fullpage.min.js"></script>
     <script>
         $(function(){
             var h=document.documentElement.clientHeight;
@@ -115,6 +120,7 @@
                 myChart_bid_data_year.setOption(option);
             };            
 
+            $("#fullpage").fullpage();
         });
     </script>
 </html>

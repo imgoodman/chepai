@@ -24,5 +24,6 @@ def loadOriginalDataSet(fileName="../data/30_60_useful_bid_data.csv"):
 
 
 def loadOriginalDataSetWithPandas(fileName="../data/30_60_useful_bid_data.csv"):
-    dataset = pd.read_csv(fileName,skiprows=[0])
-    print(dataset)
+    dataset = pd.read_csv(fileName,skiprows=[0],names=["id","bid-month","system-time","real-lowest-price-time","real-lowest-price","alert-price","avg-price","bid-people-num","license-num","lowest-price","lowest-price-time","lowest-price-order","result"])
+    #print(dataset)
+    return dataset
