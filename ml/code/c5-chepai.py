@@ -10,6 +10,8 @@ from sklearn.feature_selection import VarianceThreshold
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import chi2
 
+from sklearn.decomposition import PCA
+
 from scipy.stats import pearsonr
 
 def test():
@@ -34,12 +36,26 @@ def test():
     Xt_pearsonr=transformer_pearsonr.fit_transform(X,Y)
     print(transformer_pearsonr.scores_)#通过pearsonr检验，发现，“系统时间，实时最低价时间，实时最低价，警示价，参拍人数,额度”是最佳特征，score差距不大
 
+    #PCA 主要成分算法
+    pca=PCA(n_components=6)
+    Xt_pca = pca.fit_transform(X)    
+    print(pca.explained_variance_)
+
+
     #看那个特征集合效果更好
     clf=DecisionTreeClassifier(random_state=14)
+
     scores_chi2 = cross_val_score(clf,Xt_chi2,Y, scoring='accuracy')
+    print('score chi2')
     print(scores_chi2.mean())#0.49
+
     scores_pearsonr=cross_val_score(clf,Xt_pearsonr,Y,scoring='accuracy')
+    print('score pearsonr')
     print(scores_pearsonr.mean())#0.7 效果更好  说明这6个特征都是重要的
+
+    scores_pca=cross_val_score(clf,Xt_pca,Y,scoring='accuracy')
+    print('score pca')
+    print(scores_pca.mean())#0.47
 
 def multivariate_pearsonr(X,y):
     scores,pvalues=[],[]
