@@ -3,6 +3,8 @@ from time import sleep
 import urllib.request
 from urllib.error import HTTPError
 
+import numpy as np
+
 
 titles={}
 
@@ -44,22 +46,52 @@ url_format='{url_base}/{id}/{id}-0.txt'
 
 data_folder='../data/book/'
 
-for author in titles:
-    print('Downloading titles from {author}'.format(author=author))
-    author_folder=os.path.join(data_folder,author)
-    if not os.path.exists(author_folder):
-        os.makedirs(author_folder)
-    for bookid in titles[author]:        
-        print('----Getting book with id {id}'.format(id=bookid))
-        url=url_format.format(url_base=url_base,id=bookid)
-        print('----'+url)
-        filename=os.path.join(author_folder,'{id}.txt'.format(id=bookid))
-        if os.path.exists(filename):
-            print('----File already exists, skipping')
-        else:
-            try:
-                urllib.request.urlretrieve(url,filename)                
-            except HTTPError:
-                print('http error')
-            sleep(60)
-print('Download completed!')
+def get_data():
+    for author in titles:
+        print('Downloading titles from {author}'.format(author=author))
+        author_folder=os.path.join(data_folder,author)
+        if not os.path.exists(author_folder):
+            os.makedirs(author_folder)
+        for bookid in titles[author]:        
+            print('----Getting book with id {id}'.format(id=bookid))
+            url=url_format.format(url_base=url_base,id=bookid)
+            print('----'+url)
+            filename=os.path.join(author_folder,'{id}.txt'.format(id=bookid))
+            if os.path.exists(filename):
+                print('----File already exists, skipping')
+            else:
+                try:
+                    urllib.request.urlretrieve(url,filename)                
+                except HTTPError:
+                    print('http error')
+                sleep(60*10)
+    print('Download completed!')
+
+def clean_book(document):
+    lines=document.split('\n')
+    start=0
+    end=len(lines)
+    for i in range(len(lines)):
+        line=lines[i]
+        if line.startswith('*** START OF THIS PROJECT GUTENBERG'):
+            start=i+1
+        elif line.startswith('*** END OF THIS PROJECT GUTENBERG'):
+            end=i-1
+    return '\n'.join(lines[start:end])
+
+def load_book_data():
+    documents=[]
+    authors=[]
+    sub_folders=[subfolder for subfolder in os.listdir(data_folder) if os.path.isdir(os.path.join(data_folder,subfolder))]
+    print(sub_folders)
+    for author_number,subfolder in enumerate(sub_folders):
+        full_sub_folder=os.path.join(data_folder,subfolder)
+        for document_name in os.listdir(full_sub_folder):
+            with open(os.path.join(full_sub_folder,document_name)) as inf:
+                documents.append(clean_book(inf.read()))
+                authors.append(author_number)
+    return documents,np.array(authors,dtype='int')
+
+
+if __name__=='__main__':
+    load_book_data()
