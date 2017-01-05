@@ -155,8 +155,10 @@ def classify_document():
 
     pipeline1= Pipeline([('feature_extraction',extractor),('clf',grid)])
 
+    pipeline1=Pipeline([('feature_extraction',CountVectorizer(analyzer='char',ngram_range=(3, 3))),('classifier',grid)])
+
     scores= cross_val_score(pipeline1,documents,labels,scoring='f1')
-    print(np.mean(scores))
+    print('Score {0:.3f}'.format(np.mean(scores)))
 
 if __name__=='__main__':
     get_data()
