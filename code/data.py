@@ -65,7 +65,7 @@ def scrapySummaryDataOfMonth(baseUrl="http://bidwiz.duapp.com/bwCheckController.
                 # }
                 #break
 
-def saveNewestMonthData(year=2016,month=12,maxPage=5,pageSize=60):
+def saveNewestMonthData(year=2017,month=1,maxPage=5,pageSize=60):
     bidSummaryData = scrapySummaryDataOfMonth("http://bidwiz.duapp.com/bwCheckController.do?getBidSummaryData",year,month,maxPage,pageSize)
     bidData = scrapyDataOfMonth("http://bidwiz.duapp.com/bwCheckController.do?getBidHistoricalData",year,month,maxPage,pageSize)    
     secrets=confidentials.getMySqlAuth()
@@ -254,6 +254,27 @@ def save30260UsefulBidDataToCSV(fileName="30_60_useful_bid_data.csv",startTime="
                 row.append(0)
             writer.writerow(row)
     csvFile.close()
+    cur.close()
+    conn.close()
+
+def saveSummaryToCSV():
+    secrets=confidentials.getMySqlAuth()
+    conn=pymysql.connect(host=secrets[0],user=secrets[1],passwd=secrets[2],db=secrets[3])
+    conn.set_charset("utf8")
+    cur=conn.cursor()
+    cur.execute("set names utf8;")
+    cur.execute("set character set utf8;")
+    cur.execute("set character_set_connection=utf8;")
+    sql='select bid_month, alert_price,bid_people_num,license_num,lowest_price from t_bid_summary order by bid_month desc'
+    cur.execute(sql)
+    csv_file=open("../data/summary.csv",mode='w',newline="")
+    writer = csv.writer(csv_file)
+    writer.writerow(("bid_month","alert_price","bid_people_num","license_num","lowest_price"))
+    rows=cur.fetchall()
+    for row in rows:
+        if row[1]!=0:
+            writer.writerow(row)
+    csv_file.close()
     cur.close()
     conn.close()
 
@@ -450,7 +471,8 @@ def calculateFinalMarginPrice(year=2014):
 #calculateFinalMarginPrice()
 #scrapyDataOfMonth()
 #scrapySummaryDataOfMonth()
-#saveNewestMonthData()
+# saveNewestMonthData()
 #saveAllBidDataToCSV(fileName="all_bid_data.csv")
 #saveAllBidDataToCSV(fileName="30_60_bid_data.csv",startTime="11:29:30",endTime="11:30:00")
-save30260UsefulBidDataToCSV()
+# save30260UsefulBidDataToCSV()
+saveSummaryToCSV()
