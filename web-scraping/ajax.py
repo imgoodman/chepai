@@ -273,7 +273,7 @@ def clean_patent_name():
     close_conn(conn,cur)
 
 def get_secrets():
-    return 
+    return ("qdm115145384.my3w.com","qdm115145384","********","qdm115145384_db")
 
 def get_conn():
     secrets=get_secrets()

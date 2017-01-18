@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from matplotlib import pyplot as plt
 from sklearn.linear_model import LinearRegression,Ridge
-from sklearn.cross_validation import train_test_split
+from sklearn.cross_validation import train_test_split,cross_val_score
 
 """
 get bid detail data (the last 30 seconds: from 29:30-30:00)
@@ -76,9 +76,29 @@ def linear_regression_price_margin():
     data=load_dataset()
     X=data[["system_time","alert_price","license_num","bid_people_num"]]
     y=data[["real_lowest_price"]]
-    y=y["real_lowest_price"]-data["alert_price"]
-    print(y)
-    print(y.describe())
+    y["margin"]=y["real_lowest_price"]-data["alert_price"]
+    # print(y)
+    # print(y.describe())
+    reg=LinearRegression()
+    x_train,x_test,y_train,y_test=train_test_split(X,y["margin"],random_state=14)
+    reg.fit(x_train,y_train)
+    print(reg.coef_)
+    y["pred"]=reg.predict(X)
+    
+    x_month=X[data["bid_month"]==16.12]["system_time"]
+    y_month=y[data["bid_month"]==16.12]["margin"]
+    y_month_pred=y[data["bid_month"]==16.12]["pred"]
+    # print(x_month)
+    # print(y_month)
+    # print(y_month_pred)
+    plt.xticks(range(len(x_month)))
+    plt.plot(range(len(x_month)),y_month)
+    plt.plot(range(len(x_month)),y_month_pred)
+    plt.legend()
+    plt.show()
+    # print(reg.predict(x_test)-y_test)
+    # scores=cross_val_score(reg,X,y,scoring='accuracy')
+    # print(scores)
 
 def ridge_regression():
     X,y=get_XY()
