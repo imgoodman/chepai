@@ -5,7 +5,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from time import sleep
 
 def get_secrets():
-    return ()
+    return ("********","********")
 
 def login_weibo():
     secrets=get_secrets()

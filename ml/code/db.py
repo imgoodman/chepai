@@ -27,3 +27,14 @@ def loadOriginalDataSetWithPandas(fileName="../data/30_60_useful_bid_data.csv"):
     dataset = pd.read_csv(fileName,skiprows=[0],names=["id","bid-month","system-time","real-lowest-price-time","real-lowest-price","alert-price","avg-price","bid-people-num","license-num","lowest-price","lowest-price-time","lowest-price-order","result"])
     #print(dataset)
     return dataset
+
+def load_weibo_data(userId):
+    inf=open("../../data/{0}.txt".format(userId),mode='r',encoding="utf-8")
+    weibos=[]
+    for line in inf.readlines():
+        line=line.strip()
+        if len(line.split("\t"))==2:
+            continue
+        weibos.append(line)
+    inf.close()
+    return weibos

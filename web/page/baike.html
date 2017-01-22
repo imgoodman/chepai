@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>爬虫爬取百科词条</title>
+    <link href="../src/bootstrap-3.2.0-dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../src/css/font-awesome.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container-fluid">
+    <div class="row" id="app">
+        <div class="col-lg-7">
+            <div class="panel panel-success">
+                <div class="panel-heading">
+                    <h3 class="panel-title">已经采集的词条<small v-text="baikeCount"></small></h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                        <thead>
+                        <tr>
+                            <th>编号</th>
+                            <th>名称</th>
+                            <th>照片</th>
+                            <th>百度百科链接</th>
+                            <th>爬取时间</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="item in baikes" v-on:click="changeBaike(item)" v-bind:class="{info:item.id==currentBaike.id}">
+                            <td v-text="item.id">}</td>
+                            <td v-text="item.title"></td>
+                            <td><img v-bind:src="item.imgUrl" style="width: 100px;height: 100px;"></td>
+                            <td><a class="btn btn-default btn-sm" v-bind:href="item.url" target="_blank">查看</a></td>
+                            <td>{{ new Date(item.createTime).toLocaleString()}}</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-default" type="button" title="分享到知识库"><i class="fa fa-fw fa-share-alt"></i>分享</button>
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+        <div class="col-lg-5">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <h3 class="panel-title">该词条页面包含的相关词条<small v-text="baikeChildCount"></small></h3>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-hover table-striped">
+                        <thead>
+                        <tr>
+                            <th>编号</th>
+                            <th>名称</th>
+                            <th>百度百科链接</th>
+                            <th>爬取时间</th>
+                            <th></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        <tr v-for="item in baikeChild">
+                            <td v-text="item.id"></td>
+                            <td v-text="item.title"></td>
+                            <td><a class="btn btn-default btn-sm" v-bind:href="'http://baike.baidu.com' +item.url" target="_blank">查看</a></td>
+                            <td>{{new Date(item.createTime).toLocaleString() }}</td>
+                            <td>
+                                <span v-text="item.scrapyState"></span>
+                                <div class="btn-group btn-group-sm">
+                                    <button class="btn btn-default" type="button" v-on:click="beginScrapy(item)" v-if="item.scrapyState==0"><i class="fa fa-fw fa-eye"></i>爬取</button>
+                                    <button class="btn btn-success" type="button" v-on:click="getScrapyState(item)" v-if="item.scrapyState==1"><i class="fa fa-fw fa-heartbeat"></i>查看爬取状态</button>
+                                    <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown">
+                                        <span class="caret"></span>
+                                        <span class="sr-only">Toggle Dropdown</span>
+                                    </button>
+                                    <ul class="dropdown-menu" role="menu">
+                                        <li><a href="#" v-on:click.stop.prevent="asComposition(item)"><i class="fa fa-fw fa-remove"></i>删除</a></li>
+                                        <li class="divider"></li>
+                                        <li><a href="#" v-on:click.stop.prevent="asComposition(item)"><i class="fa fa-fw fa-gears"></i>作为结构</a></li>
+                                        <li class="divider"></li>
+                                        <li><a href="#"><i class="fa fa-fw fa-barcode"></i>作为特性</a></li>
+                                        <li class="divider"></li>
+                                        <li><a href="#"><i class="fa fa-fw fa-clone"></i>作为功能</a></li>
+                                    </ul>
+                                </div>
+                                <label class="label label-success" v-if="item.scrapyState==2">爬取成功</label>
+                                <label class="label label-danger" v-if="item.scrapyState==3">爬取失败</label>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="../src/js/jquery-1.11.0.min.js"></script>
+<script type="text/javascript" src="../src/bootstrap-3.2.0-dist/js/bootstrap.min.js"></script>
+<script type="text/javascript" src="../src/vuejs/vue.min.js" ></script>
+<script type="text/javascript" src="../src/vuejs/axios.min.js"></script>
+<script>
+    $(function(){
+        var h=document.documentElement.clientHeight;
+        h=h-20;
+        console.log(h);
+        $("#app .panel").css({"height":h+"px","overflow":"scroll"});
+    });
+</script>
+<script>
+    var vm=new Vue({
+        el:"#app",
+        data:{
+            apiUrl:'/share/baike/all',
+            baikes:[],
+            baikeChild:[],
+            currentBaike:{}
+        },
+        computed:{
+            apiChildUrl:function(){
+                return '/share/baike/'+this.currentBaike.id+'/child'
+            },
+            baikeCount:function(){
+                return this.baikes.length;
+            },
+            baikeChildCount:function(){
+                return this.baikeChild.length;
+            }
+        },
+        watch:{
+            currentBaike:function(val,oldVal){
+                this.getBaikeChild()
+            }
+        },
+        ready:function(){
+            this.getBaikes()
+        },
+        methods:{
+            getBaikes:function(){
+                axios.get(this.apiUrl).then(function(res){
+                    console.log(res.data.extendData);
+                    //this.baikes=res.data.extendData;
+                    vm.$set('baikes',res.data.extendData);
+                    vm.$set('currentBaike',res.data.extendData[0]);
+                });
+                /*this.$http.get(this.apiUrl).then(function(res){
+                    console.log(res.data.extendData);
+                    vm.$set('baikes',res.data.extendData);
+                });*/
+            },
+            getBaikeChild:function(){
+                axios.get(this.apiChildUrl).then(function(res){
+                    vm.$set('baikeChild',res.data.extendData);
+                });
+            },
+            changeBaike:function(item){
+                this.currentBaike=item;
+            },
+            beginScrapy:function(item){
+                axios.post('/share/baike/child/'+item.id).then(function(res){
+                    item.scrapyState=1;
+                });
+            },
+            getScrapyState:function(item){
+                axios.get('/share/baike/child/'+item.id).then(function(res){
+                    if(res.data.success){
+                        item.scrapyState=2;
+                        console.log(res.data.extendData);
+                        vm.baikes.push(res.data.extendData);
+                        console.log(vm.baikes);
+                    }
+                });
+            },
+            asComposition:function(item){
+                alert(item.id);
+            }
+        }
+    });
+</script>
+</body>
+</html>

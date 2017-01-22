@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>专利信息</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link href="../src/bootstrap-3.2.0-dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="../src/css/font-awesome.min.css" rel="stylesheet">
+        <style type="text/css">
+            table thead tr th{
+                cursor: pointer;
+            }
+        </style>
+    </head>
+    <body>
+    <div id="app" class="container-fluid">
+    	<div class="row">
+    		<div class="col-lg-7">
+                <div class="panel panel-success">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">已经采集的专利<small v-text="patentCount"></small></h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-horizontal" id="filter_form">
+                            <div class="form-group">
+                                <label class="control-label col-lg-2">专利名称:</label>
+                                <div class="col-lg-10">
+                                    <input type="text" name="name" class="form-control" v-model="name">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-lg-2">公开日期:</label>
+                                <div class="col-lg-10">
+                                    <input type="date" name="publish_date" class="form-control" v-model="publish_date">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-lg-2">申请人:</label>
+                                <div class="col-lg-10">
+                                    <input type="text" name="applier_name" class="form-control" v-model="applier_name">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-lg-2">发明人:</label>
+                                <div class="col-lg-10">
+                                    <input type="text" name="inventor_name" class="form-control" v-model="inventor_name">
+                                </div>
+                            </div>
+                            <div class="form-group">                                
+                                <div class="col-lg-offset-2 col-lg-10">                                    
+                                    <button type="button" id="filter_patent" class="btn btn-primary" v-on:click="filter()"><i class="fa fa-fw fa-search"></i>检索</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-striped">
+                            <thead>
+                                <tr>
+                                    <th>编号</th>
+                                    <th v-on:click="filterByName('name')">
+                                        <span>名称</span>
+                                        <i class="fa fa-fw fa-sort-up" v-if="orderBy==='name' && orderType==='asc'"></i>
+                                        <i class="fa fa-fw fa-sort-desc" v-if="orderBy==='name' && orderType==='desc'"></i>
+                                        <i class="fa fa-fw fa-sort" v-if="orderBy!='name'"></i>
+                                    </th>
+                                    <th v-on:click="filterByName('publish_date')" style="width:105px;"> 
+                                        <span>公开日期</span>
+                                        <i class="fa fa-fw fa-sort-asc" v-if="orderBy==='publish_date' && orderType==='asc'"></i>
+                                        <i class="fa fa-fw fa-sort-desc" v-if="orderBy==='publish_date' && orderType==='desc'"></i>
+                                        <i class="fa fa-fw fa-sort" v-if="orderBy!='publish_date'"></i>
+                                    </th>
+                                    <th v-on:click="filterByName('applier_name')">
+                                        <span>申请人</span>
+                                        <i class="fa fa-fw fa-sort-asc" v-if="orderBy==='applier_name' && orderType==='asc'"></i>
+                                        <i class="fa fa-fw fa-sort-desc" v-if="orderBy==='applier_name' && orderType==='desc'"></i>
+                                        <i class="fa fa-fw fa-sort" v-if="orderBy!='applier_name'"></i>
+                                    </th>
+                                    <th v-on:click="filterByName('inventor_name')">
+                                        <span>发明人</span>
+                                        <i class="fa fa-fw fa-sort-asc" v-if="orderBy==='inventor_name' && orderType==='asc'"></i>
+                                        <i class="fa fa-fw fa-sort-desc" v-if="orderBy==='inventor_name' && orderType==='desc'"></i>
+                                        <i class="fa fa-fw fa-sort" v-if="orderBy!='inventor_name'"></i>
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="item in patents" v-on:click="changePatent(item)" v-bind:class="{info:item.id==currentPatentId}">
+                                    <td v-text="item.id">}</td>
+                                    <td v-text="item.name"></td>
+                                    <!--<td><img v-bind:src="item.figure_id" style="width: 100px;height: 100px;"></td>-->
+                                    <td v-text="item.publish_date"></td>
+                                    <td v-text="item.applier_name"></td>
+                                    <td v-text="item.inventor_name"></td>
+                                    <!--<td><a class="btn btn-default btn-sm" v-bind:href="item.url" target="_blank">查看</a></td>-->
+                                    <!--<td>{{ new Date(item.createTime).toLocaleString()}}</td>-->
+                                    <!--<td>
+                                        <div class="btn-group btn-group-sm">
+                                            <button class="btn btn-default" type="button" title="分享到知识库"><i class="fa fa-fw fa-share-alt"></i>分享</button>
+                                        </div>
+                                    </td>-->
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-3">
+                            <p style="margin: 25px;">共<strong class="badge" v-text="total"></strong>个专利</p>
+                        </div>
+                        <div class="col-lg-9">
+                            <nav>
+                                <ul class="pager">
+                                    <li v-bind:class="{'disabled': currentPageIndex==0}"><a href="javascript:void(0);" v-on:click="previousPage"><i class="fa fa-fw fa-arrow-left"></i>上一页</a></li>
+                                    <li><a href="javascript:void(0);" v-on:click="nextPage">下一页<i class="fa fa-fw fa-arrow-right"></i></a></li>
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-lg-5">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">该专利<strong v-text="patentDetail.name"></strong>的详情</h3>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-lg-12">
+                                <div class="form-horizontal">
+                                    <div class="form-group">
+                                        <label class="control-label col-lg-2">名称:</label>
+                                        <div class="col-lg-10">
+                                            <p class="form-control-static" v-text="patentDetail.name"></p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-lg-2">申请号:</label>
+                                        <div class="col-lg-10">
+                                            <p class="form-control-static" v-text="patentDetail.apply_code"></p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-lg-2">申请日期:</label>
+                                        <div class="col-lg-10">
+                                            <p class="form-control-static" v-text="patentDetail.apply_date"></p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-lg-2">公开号:</label>
+                                        <div class="col-lg-10">
+                                            <p class="form-control-static" v-text="patentDetail.publish_code"></p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-lg-2">公开日期:</label>
+                                        <div class="col-lg-10">
+                                            <p class="form-control-static" v-text="patentDetail.publish_date"></p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-lg-2">分类号:</label>
+                                        <div class="col-lg-10">
+                                            <p class="form-control-static" v-text="patentDetail.ipc_code"></p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-lg-2">申请人:</label>
+                                        <div class="col-lg-10">
+                                            <p class="form-control-static" v-text="patentDetail.applier_name"></p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-lg-2">发明人:</label>
+                                        <div class="col-lg-10">
+                                            <p class="form-control-static" v-text="patentDetail.inventor_name"></p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-lg-2">摘要:</label>
+                                        <div class="col-lg-10">
+                                            <p class="form-control-static" v-html="patentDetail.abstract"></p>
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label class="control-label col-lg-2">示意图:</label>
+                                        <div class="col-lg-10">
+                                            <img v-bind:alt="patentDetail.name" v-bind:src="patentDetail.baiten_image_url" class="img-responsive img-thumbnail">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+    	</div>
+    </div>
+    <script type="text/javascript" src="../src/js/jquery-1.11.0.min.js"></script>
+    <script type="text/javascript" src="../src/bootstrap-3.2.0-dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript" src="../src/vuejs/vue.min.js" ></script>
+    <script type="text/javascript" src="../src/vuejs/axios.min.js"></script>
+    <script>
+        $(function(){
+            // var h=document.documentElement.clientHeight;
+            // h=h-20;
+            // console.log(h);
+            // $("#app .panel").css({"height":h+"px","overflow":"scroll"});
+        });
+    </script>
+    <script>
+        var vm=new Vue({
+            el:"#app",
+            data:{                
+                patents:[],
+                currentPatentId:"",
+                patentDetail:{},
+                orderBy:"name",
+                orderType:"asc",
+                name:"",
+                publish_date:"",
+                applier_name:"",
+                inventor_name:"",
+                total:0,
+                currentPageIndex:0
+            },
+            computed:{
+                apiUrl:function(){
+                    return 'http://huangjian.wang/data/patent.php?'+'name='+this.name+'&publish_date='+this.publish_date+'&inventor_name='+this.inventor_name+'&applier_name='+this.applier_name+'&orderBy='+this.orderBy+'&orderType='+this.orderType+'&p='+this.currentPageIndex;
+                },
+                apiDetailUrl:function(){
+                    return 'http://huangjian.wang/data/patentDetail.php?id='+this.currentPatentId;
+                }
+            },
+            watch:{
+                currentPatentId:function(val,oldVal){
+                    this.getPatentDetail();
+                }
+            },
+            ready:function(){
+                this.getPatents();
+            },
+            methods:{
+                getPatents:function(){
+                    axios.get(this.apiUrl).then(function(res){
+                        // console.log(res);
+                        //this.baikes=res.data.extendData;
+                        vm.$set('patents',res.data.rows);
+                        //vm.$set('currentPatent',res.data.rows[0]);
+                        if(res.data.rows.length>0){
+                            vm.$set('currentPatentId',res.data.rows[0].id);
+                        }
+                        vm.$set("total", parseInt(res.data.total));
+                    });
+                    /*this.$http.get(this.apiUrl).then(function(res){
+                        console.log(res.data.extendData);
+                        vm.$set('baikes',res.data.extendData);
+                    });*/
+                },
+                getPatentDetail:function(){
+                    axios.get(this.apiDetailUrl).then(function(res){
+                        vm.$set('patentDetail',res.data.detail);
+                    });
+                },
+                changePatent:function(item){
+                    this.currentPatentId=item.id;
+                },
+                filterByName:function(newName){
+                    if(this.orderBy==newName){
+                        if(this.orderType=='asc'){
+                            this.orderType='desc';
+                        }else{
+                            this.orderType='asc';
+                        }
+                    }else{
+                        this.orderBy=newName;
+                    }
+                    this.currentPageIndex=0;
+                    this.getPatents();
+                },
+                filter:function(){
+                    this.currentPageIndex=0;
+                    this.getPatents();
+                },
+                previousPage:function(){
+                    if(this.currentPageIndex>0){
+                        this.currentPageIndex=this.currentPageIndex-1;
+                    }
+                    this.getPatents();
+                },
+                nextPage:function(){
+                    this.currentPageIndex = this.currentPageIndex +1;
+                    this.getPatents();
+                }
+            }
+        });
+    </script>
+    </body>
+</html>
