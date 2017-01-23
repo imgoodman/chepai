@@ -1,6 +1,6 @@
 import db
 from sklearn.cluster import KMeans
-from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer#API http://scikit-learn.org/stable/modules/generated/sklearn.feature_extraction.text.TfidfVectorizer.html
 from sklearn.pipeline import Pipeline
 from collections import Counter
 
@@ -27,7 +27,7 @@ def get_weibo(userId):
         print("cluster {0} has {1} samples".format(i,c[i]))
         print('most important terms:')
         centroid=pipeline.named_steps['cluster'].cluster_centers_[i]#数组 每个族的质心
-        most_important = centroid.argsort()
+        most_important = centroid.argsort()#将array升序，返回各值的索引
         for i in range(5):
             term_index = most_important[-(i+1)]
             print('{0}  {1} (score: {2:.4f})'.format(i+1,terms[term_index],centroid[term_index]))
